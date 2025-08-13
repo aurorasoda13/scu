@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - Servizio Civile Universale</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="navbar-left">
+            <a href="{{ url_for('index') }}" class="nav-button home-button">Home</a>
+        </div>
+        <div class="navbar-center">
+            <h1>Servizio Civile Universale</h1>
+        </div>
+        <div class="navbar-right">
+            {% if session.get("utente") == "Don" %}
+    <a href="{{ url_for('gestione') }}" id="menu-toggle" class="nav-button manage-account-button">Gestisci account</a>
+    {%endif%}
+{% if session.get("utente") and session.get("utente") != "" %}
+    <a href="{{ url_for('cambiapsw') }}" class="nav-button change-password-button">Cambia Password</a>
+    <a href="{{ url_for('logout') }}" class="nav-button logout-button">Logout</a>
+{% endif %}
+        </div>
+    </header>
+
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

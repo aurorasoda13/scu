@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% block title %}
+    Home
+{% endblock %}
+
+{% block content %}
+    <section id="oreproprie-section" class="auth-section">
+        <h2>Accesso eseguito per {{ nome }}</h2>
+        {% if nome!= "Don" %}
+        <p>Le mie ore:</p>
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Ora entrata</th>
+                    <th>Ora uscita</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in registro %}
+                    
+                <tr>
+                    <td>{{ entry[1]}}</td>
+                    <td>{{ entry[3]}}</td>
+                    <td>{{ entry[2]}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table>
+            <tr><td>Ore totali</td></tr>
+            <tr><td>{{ totale_ore }}</td></tr>
+        {% else %}
+            <p>Registro totale:</p>
+{% if nome == "Don" %}
+    <a href="/scarica_excel" class="btn btn-success" style="margin-bottom:10px;">Scarica Excel</a>
+    <form action="/svuota_registro" method="post" style="display:inline;">
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Sei sicuro di voler svuotare tutto il registro?');">Svuota registro</button>
+    </form>
+{% endif %}
+            <table id="don-table">
+            <thead>
+                <tr>
+                    <th>
+                        <select class="header-dropdown" data-column="nome">
+                            <option value="">Nome</option>
+                        {%for entry in nomi_unici %}
+                            <option value="{{ entry }}">{{ entry }}</option>
+                        {% endfor %}
+                        </select>
+                    </th>
+                    <th>
+                        <select class="header-dropdown" data-column="cognome">
+                            <option value="">Cognome</option>
+                        {%for entry in cognomi_unici %}
+                            <option value="{{ entry }}">{{ entry }}</option>
+                        {% endfor %}
+                        </select>
+                    </th>
+                    <th>Ora entrata</th>
+                    <th>Ora uscita</th>
+                    <th>
+                        <select class="header-dropdown" data-column="data">
+                            <option value="">Data entrata</option>
+                        {%for entry in date_uniche %}
+                            <option value="{{ entry.strftime('%Y-%m-%d') }}">{{ entry.strftime('%d-%m-%Y') }}</option>
+                        {% endfor %}
+                        </select>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for entry in registro %}
+                
+            <tr data-id="{{ entry[2] }}">
+                <td>{{ entry[0]}}</td>
+                <td>{{ entry[1]}}</td> 
+                <td contenteditable="true">{{ entry[3]}}</td>
+                <td contenteditable="true">{{ entry[5]}}</td> 
+                <td contenteditable="true">{{ entry[4]}}</td>
+            <tr>
+            {% endfor %}
+            </tbody>
+            </table>
+            <button id="reset-filtri">Reset filtri</button>
+        {% endif %}
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const donTableCells = document.querySelectorAll('#don-table td[contenteditable="true"]');
+            
+            donTableCells.forEach(cell => {
+                cell.addEventListener('blur', (event) => {
+                    const newValue = event.target.innerText;
+                    const row = event.target.closest('tr');
+                    
+                    const recordId = row.dataset.id;
+                    const columnIndex = event.target.cellIndex;
+
+                    const postData = {
+                        id: recordId,
+                        column_index: columnIndex,
+                        value: newValue
+                    };
+
+                    fetch('/salva_modifica_registro', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(postData)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log("Salvataggio riuscito!", data.message);
+                        } else {
+                            console.error("Errore durante il salvataggio:", data.message);
+                        }
+                    })
+                    .catch(error => console.error('Errore:', error));
+                });
+            });
+
+            // Funzionalità aggiuntiva per i dropdown di filtro
+            const headerDropdowns = document.querySelectorAll('.header-dropdown');
+            const donTableBody = document.querySelector('#don-table tbody');
+            const resetButton = document.getElementById('reset-filtri');
+            let filtri = {
+                nome: '',
+                cognome: '',
+                data: ''
+            };
+
+            function applicaFiltri() {
+                const params = new URLSearchParams();
+                if (filtri.nome) params.append('nome', filtri.nome);
+                if (filtri.cognome) params.append('cognome', filtri.cognome);
+                if (filtri.data) params.append('data', filtri.data);
+
+                const queryString = params.toString();
+                fetch(`/filtra_registro?${queryString}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            aggiornaTabella(data.registro);
+                        } else {
+                            console.error("Errore durante il filtraggio:", data.message);
+                            alert("Errore durante il filtraggio dei dati.");
+                        }
+                    })
+                    .catch(error => console.error('Errore:', error));
+            }
+
+            function aggiornaTabella(registro) {
+                // Svuota il corpo della tabella
+                donTableBody.innerHTML = '';
+
+                // Popola la tabella con i nuovi dati filtrati
+                registro.forEach(entry => {
+                    const row = document.createElement('tr');
+                    row.dataset.id = entry.id;
+                    row.innerHTML = `
+                        <td>${entry.nome}</td>
+                        <td>${entry.cognome}</td> 
+                        <td contenteditable="true">${entry.ora_entrata}</td>
+                        <td contenteditable="true">${entry.ora_uscita}</td> 
+                        <td contenteditable="true">${entry.data_entrata}</td>
+                    `;
+                    donTableBody.appendChild(row);
+                });
+
+                // Ri-attacca gli event listener alle nuove celle
+                document.querySelectorAll('#don-table td[contenteditable="true"]').forEach(cell => {
+                    cell.addEventListener('blur', (event) => {
+                        const newValue = event.target.innerText;
+                        const row = event.target.closest('tr');
+                        
+                        const recordId = row.dataset.id;
+                        const columnIndex = event.target.cellIndex;
+
+                        const postData = {
+                            id: recordId,
+                            column_index: columnIndex,
+                            value: newValue
+                        };
+
+                        fetch('/salva_modifica_registro', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(postData)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log("Salvataggio riuscito!", data.message);
+                            } else {
+                                console.error("Errore durante il salvataggio:", data.message);
+                            }
+                        })
+                        .catch(error => console.error('Errore:', error));
+                    });
+                });
+            }
+
+            headerDropdowns.forEach(dropdown => {
+                dropdown.addEventListener('change', (event) => {
+                    const selectedValue = event.target.value;
+                    const columnType = event.target.dataset.column;
+                    
+                    filtri = {}; // Resetta tutti i filtri
+                    filtri[columnType] = selectedValue; // Applica il filtro selezionato
+
+                    applicaFiltri();
+
+                    // Resetta gli altri dropdown per coerenza visiva
+                    headerDropdowns.forEach(otherDropdown => {
+                        if (otherDropdown !== dropdown) {
+                            otherDropdown.value = "";
+                        }
+                    });
+                });
+            });
+
+            resetButton.addEventListener('click', () => {
+                filtri = {
+                    nome: '',
+                    cognome: '',
+                    data: ''
+                };
+                headerDropdowns.forEach(dropdown => {
+                    dropdown.value = "";
+                });
+                applicaFiltri();
+            });
+        });
+    </script>
+{% endblock %}
