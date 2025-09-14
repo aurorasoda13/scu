@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}
+    Gestisci Account
+{% endblock %}
+
+{% block content %}
+    <section id="gestione-section" class="auth-section">
+        <h2>Gestione Account</h2>
+        <p>Benvenuto!</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for utente in utenti %}
+                <tr>
+                    <form method="post" action="{{ url_for('modifica_utente', user_id=utente.id) }}">
+                        <td><input type="text" name="username" value="{{ utente.username }}"></td>
+                        <td><input type="text" name="nome" value="{{ utente.nome }}"></td>
+                        <td><input type="text" name="cognome" value="{{ utente.cognome }}"></td>
+                        <td>
+                            <button type="submit">Salva</button>
+                        </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}

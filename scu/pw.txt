@@ -1,0 +1,12 @@
+pw db scu:
+ks4grAGXzGAQm5w1
+
+ssh:
+aurorasoda
+123456
+
+PING pool-tcp-eu-north-1-4525d4f-939df2fbc7e84390.elb.eu-north-1.amazonaws.com (13.48.169.15) 56(84) bytes of data.
+
+^C
+--- pool-tcp-eu-north-1-4525d4f-939df2fbc7e84390.elb.eu-north-1.amazonaws.com ping statistics ---
+71 packets transmitted, 0 received, 100% packet loss, time 71672ms
