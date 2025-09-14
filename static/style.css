@@ -1,0 +1,397 @@
+/* Stili base e variabili */
+:root {
+    --primary-color: #7d041c;
+    --secondary-color: #FFC72C;
+    --background-color: #f4f7f9;
+    --card-background: #ffffff;
+    --text-color: #333333;
+    --light-text-color: #777777;
+    --border-color: #e0e0e0;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+/* Header e Navigazione */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.nav-button {
+    text-decoration: none;
+    color: white;
+    background-color: transparent;
+    border: 1px solid white;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s;
+    margin-left: 10px;
+}
+
+.nav-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.home-button {
+    border: none;
+}
+.home-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.logout-button {
+    background-color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+}
+
+.logout-button:hover {
+    background-color: rgba(220, 53, 69, 0.8);
+    border-color: rgba(220, 53, 69, 0.8);
+}
+
+/* Nuovo stile per il pulsante Gestisci account */
+.manage-account-button {
+    background-color: var(--secondary-color);
+    color: var(--primary-color);
+    border: 1px solid var(--secondary-color);
+    font-weight: 600;
+}
+.manage-account-button:hover {
+    background-color: rgba(255, 199, 44, 0.8);
+}
+
+/* Sezione principale */
+.content {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+}
+
+.auth-section, .manage-section {
+    background-color: var(--card-background);
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.auth-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+    margin: auto;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--light-text-color);
+}
+
+.auth-form input[type="text"],
+.auth-form input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.submit-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 20px;
+}
+
+.submit-button:hover {
+    background-color: #004a8b;
+}
+
+.error-message {
+    color: var(--danger-color);
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 1px solid var(--danger-color);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Stili per la tabella di Don e la tabella utente */
+#don-table, .user-table, .manage-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    background-color: var(--card-background);
+    border-radius: 8px;
+    overflow: hidden;
+    text-align: left;
+}
+
+#don-table th, #don-table td,
+.user-table th, .user-table td,
+.manage-table th, .manage-table td {
+    padding: 15px;
+    border: 1px solid var(--border-color);
+}
+
+#don-table thead, .user-table thead, .manage-table thead {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#don-table th, .user-table th, .manage-table th {
+    font-weight: 600;
+}
+
+#don-table tbody tr:nth-child(even),
+.user-table tbody tr:nth-child(even),
+.manage-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#don-table tbody tr:hover,
+.user-table tbody tr:hover,
+.manage-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+#don-table td[contenteditable="true"]:focus {
+    background-color: #fffbe6;
+    outline: 2px solid var(--secondary-color);
+}
+
+.header-dropdown {
+    border: none;
+    background: transparent;
+    color: white;
+    font-size: 1rem;
+    font-family: var(--font-family);
+    cursor: pointer;
+}
+.header-dropdown option {
+    color: var(--text-color);
+    background: white;
+}
+
+.header-dropdown:focus {
+    outline: none;
+}
+
+/* Pulsanti per Don */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: inline-block;
+    margin: 5px;
+}
+
+.btn-success {
+    background-color: var(--success-color);
+}
+.btn-success:hover {
+    background-color: #218838;
+}
+
+.btn-danger {
+    background-color: var(--danger-color);
+}
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+#reset-filtri {
+    background-color: var(--light-text-color);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.3s;
+}
+
+#reset-filtri:hover {
+    background-color: #5a5a5a;
+}
+
+/* Stili per la tabella di Don e la tabella utente */
+#don-table, .user-table, .manage-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    background-color: var(--card-background);
+    border-radius: 8px;
+    overflow: hidden;
+    text-align: left;
+}
+
+#don-table th, #don-table td,
+.user-table th, .user-table td,
+.manage-table th, .manage-table td {
+    padding: 15px;
+    border: 1px solid var(--border-color);
+}
+
+#don-table thead, .user-table thead, .manage-table thead {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#don-table th, .user-table th, .manage-table th {
+    font-weight: 600;
+}
+
+#don-table tbody tr:nth-child(even),
+.user-table tbody tr:nth-child(even),
+.manage-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#don-table tbody tr:hover,
+.user-table tbody tr:hover,
+.manage-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+#don-table td[contenteditable="true"]:focus {
+    background-color: #fffbe6;
+    outline: 2px solid var(--secondary-color);
+}
+
+/* Stili per il logo nella barra di navigazione */
+.navbar-center a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: white; /* Per coerenza con il colore del testo nella navbar */
+}
+
+.header-logo {
+    height: 40px; /* Imposta l'altezza desiderata per il logo */
+    width: auto;
+    margin-right: 15px; /* Spazio tra il logo e il testo */
+}
+
+.navbar-center h1 {
+    margin: 0;
+    font-size: 1.8em; /* Adatta la dimensione del testo del titolo */
+    font-weight: 500;
+}
+
+/* Media Queries per la responsività */
+@media (max-width: 768px) {
+    /* Header e Navigazione */
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px 20px;
+    }
+
+    .navbar h1 {
+        margin-bottom: 10px;
+        font-size: 1.2rem;
+    }
+
+    .nav-button {
+        width: 100%;
+        margin: 5px 0;
+        text-align: center;
+    }
+    
+    .navbar-center {
+        width: 100%;
+        justify-content: center;
+    }
+    .navbar-center a {
+        flex-direction: column;
+        text-align: center;
+    }
+    .header-logo {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    /* Sezione principale */
+    .content {
+        padding: 10px;
+        margin: 10px auto;
+    }
+
+    .auth-section, .manage-section {
+        padding: 20px;
+    }
+
+    /* Form */
+    .auth-form {
+        max-width: 100%;
+    }
+
+    /* Tabelle */
+    #don-table, .user-table, .manage-table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    #don-table thead, .user-table thead, .manage-table thead {
+        display: table-header-group;
+    }
+
+    #don-table tr, .user-table tr, .manage-table tr {
+        display: table-row;
+    }
+    
+    #don-table td, #don-table th, .user-table td, .user-table th, .manage-table td, .manage-table th {
+        white-space: nowrap;
+    }
+}

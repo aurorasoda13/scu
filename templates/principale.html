@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% block title %}
+    Home
+{% endblock %}
+
+{% block content %}
+    <section id="oreproprie-section" class="auth-section">
+        <h2>Accesso eseguito per {{ nome }}</h2> {# 'nome' viene passato dal main.py #}
+        {% if tipo_utente != "Don Alessandro" %} {# Verifica il tipo_utente dalla sessione #}
+        <p>Le mie ore:</p>
+        <table class="user-table">
+            <thead>
+                <tr>
+                    <th>Ora entrata</th>
+                    <th>Data entrata</th>
+                    <th>Ora uscita</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in registro %}
+                <tr>
+                    <td>{{ entry[1] | default('') }}</td> {# oraentrata #}
+                    <td>{{ entry[2] | default('') }}</td> {# dataentrata #}
+                    <td>{{ entry[3] | default('') }}</td> {# orauscita #}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table>
+            <tr><td>Ore totali</td></tr>
+            <tr><td>{{ totale_ore }}</td></tr>
+        </table>
+
+        {# Rimosso il form di registrazione #}
+
+        {% else %} {# Logica per "Don Alessandro" #}
+            <p>Registro totale:</p>
+            <a href="/scarica_excel" class="btn btn-success" style="margin-bottom:10px;">Scarica Excel</a>
+            {# NON usare window.confirm, ma un modal custom per svuota_registro #}
+            <button id="svuota-registro-btn" class="btn btn-danger" style="margin-bottom:10px;">Svuota registro</button>
+
+            {# Rimosso il Modal di conferma per lo svuotamento del registro #}
+
+            <table id="don-table">
+            <thead>
+                <tr>
+                    <th>
+                        <select class="header-dropdown" data-column="nome">
+                            <option value="">Nome</option>
+                        {%for entry in nomi_unici %}
+                            <option value="{{ entry }}">{{ entry }}</option>
+                        {% endfor %}
+                        </select>
+                    </th>
+                    <th>
+                        <select class="header-dropdown" data-column="cognome">
+                            <option value="">Cognome</option>
+                        {%for entry in cognomi_unici %}
+                            <option value="{{ entry }}">{{ entry }}</option>
+                        {% endfor %}
+                        </select>
+                    </th>
+                    <th>Ora entrata</th>
+                    <th>Ora uscita</th>
+                    <th>
+                        <select class="header-dropdown" data-column="data">
+                            <option value="">Data entrata</option>
+                        {%for entry in date_uniche %}
+                            {# Assicurati che entry sia un oggetto date o datetime #}
+                            <option value="{{ entry.strftime('%Y-%m-%d') }}">{{ entry.strftime('%d-%m-%Y') }}</option>
+                        {% endfor %}
+                        </select>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for entry in registro %}
+                {# entry[0]: utente.nome, entry[1]: utente.cognome, entry[2]: registro.id, entry[3]: oraentrata, entry[4]: dataentrata, entry[5]: orauscita, entry[6]: datauscita #}
+                <tr data-id="{{ entry[2] }}">
+                    <td>{{ entry[0] }}</td> {# nome utente #}
+                    <td>{{ entry[1] }}</td> {# cognome utente #}
+                    <td contenteditable="true" data-column-name="oraentrata">{{ entry[3] | default('') }}</td> {# oraentrata #}
+                    <td contenteditable="true" data-column-name="orauscita">{{ entry[5] | default('') }}</td> {# orauscita #}
+                    <td contenteditable="true" data-column-name="dataentrata">{{ entry[4] | default('') }}</td> {# dataentrata #}
+                </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+            <button id="reset-filtri" class="btn btn-secondary mt-3">Reset filtri</button>
+        {% endif %}
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Gestione del salvataggio delle modifiche per la tabella di "Don Alessandro"
+            function attachEditListeners() {
+                const donTableCells = document.querySelectorAll('#don-table td[contenteditable="true"]');
+                
+                donTableCells.forEach(cell => {
+                    cell.removeEventListener('blur', handleCellBlur); // Rimuovi listener precedenti per evitare duplicati
+                    cell.addEventListener('blur', handleCellBlur);
+                });
+            }
+
+            function handleCellBlur(event) {
+                const newValue = event.target.innerText;
+                const row = event.target.closest('tr');
+                const recordId = row.dataset.id;
+                const columnName = event.target.dataset.columnName; // Recupera il nome della colonna dal data attribute
+
+                const postData = {
+                    id: recordId,
+                    column_name: columnName, // Invia il nome della colonna al backend
+                    value: newValue
+                };
+
+                fetch('/salva_modifica_registro', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("Salvataggio riuscito!", data.message);
+                        // Opzionale: feedback visivo all'utente
+                    } else {
+                        console.error("Errore durante il salvataggio:", data.message);
+                        alert("Errore durante il salvataggio: " + data.message); // Usa alert per feedback all'utente
+                        // Ripristina il valore originale se il salvataggio fallisce
+                        event.target.innerText = event.target.dataset.originalValue || ''; 
+                    }
+                })
+                .catch(error => {
+                    console.error('Errore:', error);
+                    alert("Si è verificato un errore di rete o del server.");
+                });
+            }
+
+            // Inizialmente attacca gli event listener
+            attachEditListeners();
+
+            // Funzionalità aggiuntiva per i dropdown di filtro (solo per "Don Alessandro")
+            const headerDropdowns = document.querySelectorAll('.header-dropdown');
+            const donTableBody = document.querySelector('#don-table tbody');
+            const resetButton = document.getElementById('reset-filtri');
+            let filtri = {
+                nome: '',
+                cognome: '',
+                data: ''
+            };
+
+            function applicaFiltri() {
+                const params = new URLSearchParams();
+                if (filtri.nome) params.append('nome', filtri.nome);
+                if (filtri.cognome) params.append('cognome', filtri.cognome);
+                if (filtri.data) params.append('data', filtri.data);
+
+                const queryString = params.toString();
+                fetch(`/filtra_registro?${queryString}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            aggiornaTabella(data.registro);
+                        } else {
+                            console.error("Errore durante il filtraggio:", data.message);
+                            alert("Errore durante il filtraggio dei dati: " + data.message);
+                        }
+                    })
+                    .catch(error => console.error('Errore:', error));
+            }
+
+            function aggiornaTabella(registro) {
+                donTableBody.innerHTML = ''; // Svuota il corpo della tabella
+
+                registro.forEach(entry => {
+                    const row = document.createElement('tr');
+                    row.dataset.id = entry.id;
+                    row.innerHTML = `
+                        <td>${entry.nome}</td>
+                        <td>${entry.cognome}</td> 
+                        <td contenteditable="true" data-column-name="oraentrata">${entry.ora_entrata}</td>
+                        <td contenteditable="true" data-column-name="orauscita">${entry.ora_uscita}</td> 
+                        <td contenteditable="true" data-column-name="dataentrata">${entry.data_entrata}</td>
+                    `;
+                    donTableBody.appendChild(row);
+                });
+
+                attachEditListeners(); // Ri-attacca i listener alle nuove celle
+            }
+
+            headerDropdowns.forEach(dropdown => {
+                dropdown.addEventListener('change', (event) => {
+                    const selectedValue = event.target.value;
+                    const columnType = event.target.dataset.column;
+                    
+                    filtri = {}; // Resetta tutti i filtri
+                    if(selectedValue) { // Applica il filtro selezionato solo se un valore è stato scelto
+                       filtri[columnType] = selectedValue; 
+                    }
+
+                    applicaFiltri();
+
+                    // Resetta gli altri dropdown per coerenza visiva
+                    headerDropdowns.forEach(otherDropdown => {
+                        if (otherDropdown !== event.target) { // Confronta con event.target, non dropdown
+                            otherDropdown.value = "";
+                        }
+                    });
+                });
+            });
+
+            resetButton.addEventListener('click', () => {
+                filtri = {
+                    nome: '',
+                    cognome: '',
+                    data: ''
+                };
+                headerDropdowns.forEach(dropdown => {
+                    dropdown.value = "";
+                });
+                applicaFiltri();
+            });
+
+            // Gestione dell'avviso per svuota_registro (nessun modal)
+            const svuotaRegistroBtn = document.getElementById('svuota-registro-btn');
+
+            if (svuotaRegistroBtn) { // Assicurati che il bottone esista (solo per Don)
+                svuotaRegistroBtn.addEventListener('click', () => {
+                    if (confirm("Sei sicuro di voler svuotare tutto il registro? Questa azione è irreversibile.")) {
+                        fetch('/svuota_registro', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({}) 
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert("Registro svuotato con successo!");
+                                window.location.reload(); 
+                            } else {
+                                alert("Errore durante lo svuotamento del registro: " + data.errore);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Errore:', error);
+                            alert("Si è verificato un errore di rete durante lo svuotamento del registro.");
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}
